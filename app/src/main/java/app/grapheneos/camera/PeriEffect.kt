@@ -89,7 +89,10 @@ private class GradeProcessor : SurfaceProcessor {
 
     private val thread = HandlerThread("PeriGL").apply { start() }
     private val handler = Handler(thread.looper)
-    val executor = Executor { handler.post(it) }
+    // every GL-thread task is wrapped so one failure can't kill the looper thread
+    val executor = Executor { task ->
+        handler.post { runCatching { task.run() }.onFailure { Log.w(TAG, "GL task failed", it) } }
+    }
 
     private var eglDisplay: EGLDisplay = EGL14.EGL_NO_DISPLAY
     private var eglContext: EGLContext = EGL14.EGL_NO_CONTEXT
@@ -115,14 +118,14 @@ private class GradeProcessor : SurfaceProcessor {
     private val texMatrix = FloatArray(16)
 
     override fun onInputSurface(request: SurfaceRequest) {
-        handler.post {
+        executor.execute {
             ensureEgl()
             inputTexture?.release()
             inputSurface?.release()
 
             val st = SurfaceTexture(texId)
             st.setDefaultBufferSize(request.resolution.width, request.resolution.height)
-            st.setOnFrameAvailableListener({ handler.post { drawFrame() } }, handler)
+            st.setOnFrameAvailableListener({ executor.execute { drawFrame() } }, handler)
             val surface = Surface(st)
             inputTexture = st
             inputSurface = surface
@@ -140,7 +143,7 @@ private class GradeProcessor : SurfaceProcessor {
     }
 
     override fun onOutputSurface(surfaceOutput: SurfaceOutput) {
-        handler.post {
+        executor.execute {
             ensureEgl()
             val surface = surfaceOutput.getSurface(executor) {
                 outputs.remove(surfaceOutput)?.let { destroyWindow(it) }
@@ -198,22 +201,15 @@ private class GradeProcessor : SurfaceProcessor {
         val version = IntArray(2)
         EGL14.eglInitialize(eglDisplay, version, 0, version, 1)
 
-        val attribs = intArrayOf(
-            EGL14.EGL_RED_SIZE, 8,
-            EGL14.EGL_GREEN_SIZE, 8,
-            EGL14.EGL_BLUE_SIZE, 8,
-            EGL14.EGL_ALPHA_SIZE, 8,
-            EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-            EGLExt.EGL_RECORDABLE_ANDROID, 1,
-            EGL14.EGL_NONE
-        )
-        val configs = arrayOfNulls<EGLConfig>(1)
-        val num = IntArray(1)
-        EGL14.eglChooseConfig(eglDisplay, attribs, 0, configs, 0, 1, num, 0)
-        eglConfig = configs[0]
+        // some devices return no config when EGL_RECORDABLE_ANDROID is requested; fall back without it
+        eglConfig = chooseConfig(true) ?: chooseConfig(false)
+            ?: throw RuntimeException("no EGL config (err ${EGL14.eglGetError()})")
 
         val ctxAttribs = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
         eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig, EGL14.EGL_NO_CONTEXT, ctxAttribs, 0)
+        if (eglContext == EGL14.EGL_NO_CONTEXT) {
+            throw RuntimeException("eglCreateContext failed (err ${EGL14.eglGetError()})")
+        }
 
         // a 1x1 pbuffer so we can make the context current before any output exists
         val pbuffer = EGL14.eglCreatePbufferSurface(
@@ -236,6 +232,21 @@ private class GradeProcessor : SurfaceProcessor {
         GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
 
         initialized = true
+        Log.d(TAG, "EGL ready")
+    }
+
+    private fun chooseConfig(recordable: Boolean): EGLConfig? {
+        val attribs = ArrayList<Int>().apply {
+            addAll(listOf(EGL14.EGL_RED_SIZE, 8, EGL14.EGL_GREEN_SIZE, 8, EGL14.EGL_BLUE_SIZE, 8))
+            addAll(listOf(EGL14.EGL_ALPHA_SIZE, 8))
+            addAll(listOf(EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT))
+            if (recordable) addAll(listOf(EGLExt.EGL_RECORDABLE_ANDROID, 1))
+            add(EGL14.EGL_NONE)
+        }.toIntArray()
+        val configs = arrayOfNulls<EGLConfig>(1)
+        val num = IntArray(1)
+        EGL14.eglChooseConfig(eglDisplay, attribs, 0, configs, 0, 1, num, 0)
+        return if (num[0] > 0) configs[0] else null
     }
 
     private fun createWindow(surface: Surface): EGLSurface? {
