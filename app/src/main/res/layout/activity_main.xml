@@ -4,10 +4,11 @@
     android:layout_height="match_parent"
     android:background="@android:color/black">
 
-    <TextureView
+    <com.sturq.orchardcam.AutoFitTextureView
         android:id="@+id/preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_gravity="center" />
 
     <Button
         android:id="@+id/captureButton"

@@ -127,6 +127,8 @@ class MainActivity : AppCompatActivity() {
         previewSize = map.getOutputSizes(SurfaceTexture::class.java)
             .filter { it.width <= 1920 }
             .maxByOrNull { it.width.toLong() * it.height } ?: Size(1280, 720)
+        // sensor is landscape; portrait display swaps width/height so frames are not stretched
+        binding.preview.setAspectRatio(previewSize.height, previewSize.width)
 
         jpegReader = ImageReader.newInstance(jpegSize.width, jpegSize.height, ImageFormat.JPEG, 2)
             .apply { setOnImageAvailableListener({ onJpeg(it) }, handler) }
