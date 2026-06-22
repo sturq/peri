@@ -1,19 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme. -->
-    <style name="Theme.Camera" parent="Theme.Material3.Dark.NoActionBar">
+    <!-- sturq palette applied to Material3 colour tokens -->
+    <style name="Theme.Peri" parent="Theme.Material3.Dark.NoActionBar">
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
-
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <item name="colorPrimary">@color/peri_primary</item>
+        <item name="colorOnPrimary">@color/peri_base</item>
+        <item name="colorPrimaryContainer">@color/peri_surface1</item>
+        <item name="colorOnPrimaryContainer">@color/peri_primary</item>
+        <item name="colorSecondary">@color/peri_primary</item>
+        <item name="colorOnSecondary">@color/peri_base</item>
+        <item name="colorSecondaryContainer">@color/peri_surface1</item>
+        <item name="colorOnSecondaryContainer">@color/peri_primary</item>
+        <item name="colorTertiary">@color/peri_primary</item>
+        <item name="android:colorBackground">@color/peri_base</item>
+        <item name="colorOnBackground">@android:color/white</item>
+        <item name="colorSurface">@color/peri_base</item>
+        <item name="colorOnSurface">@android:color/white</item>
+        <item name="colorSurfaceVariant">@color/peri_surface1</item>
+        <item name="colorOnSurfaceVariant">@color/peri_primary</item>
+        <item name="colorOutline">@color/peri_surface1</item>
+        <item name="colorSurfaceContainerLowest">@color/peri_crust</item>
+        <item name="colorSurfaceContainerLow">@color/peri_mantle</item>
+        <item name="colorSurfaceContainer">@color/peri_mantle</item>
+        <item name="colorSurfaceContainerHigh">@color/peri_surface0</item>
+        <item name="colorSurfaceContainerHighest">@color/peri_surface1</item>
     </style>
 
-    <style name="Theme.App" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    <style name="Theme.Camera" parent="Theme.Peri" />
 
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-    </style>
+    <style name="Theme.App" parent="Theme.Peri" />
 
     <style name="Theme.SettingsDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog.Centered">
         <item name="android:windowMinWidthMinor">100%</item>
@@ -25,7 +43,7 @@
         <item name="cornerSize">50%</item>
     </style>
 
-    <style name="Theme.Viewer" parent="Theme.Material3.DayNight">
+    <style name="Theme.Viewer" parent="Theme.Material3.Dark">
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowActionBar">true</item>
@@ -39,6 +57,13 @@
         <item name="android:homeAsUpIndicator">@drawable/back_white</item>
 
         <item name="actionOverflowButtonStyle">@style/WhiteOverflowButtonStyle</item>
+
+        <item name="colorPrimary">@color/peri_primary</item>
+        <item name="colorOnPrimary">@color/peri_base</item>
+        <item name="colorSecondary">@color/peri_primary</item>
+        <item name="android:colorBackground">@color/peri_base</item>
+        <item name="colorSurface">@color/peri_base</item>
+        <item name="colorOnSurface">@android:color/white</item>
     </style>
 
     <style name="WhiteOverflowButtonStyle" parent="Widget.AppCompat.ActionButton.Overflow">

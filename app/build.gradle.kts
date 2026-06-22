@@ -58,11 +58,11 @@ android {
             if (useKeystoreProperties) {
                 signingConfig = signingConfigs.getByName("release")
             }
-            resValue("string", "app_name", "Camera")
+            resValue("string", "app_name", "Peri")
         }
 
         getByName("debug") {
-            resValue("string", "app_name", "OrchardCam")
+            resValue("string", "app_name", "Peri")
             // isDebuggable = false
         }
 
