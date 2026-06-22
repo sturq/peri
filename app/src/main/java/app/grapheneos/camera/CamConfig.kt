@@ -1266,52 +1266,26 @@ class CamConfig(private val mActivity: MainActivity) {
 
         try {
             try {
-                val preferredFeatures = arrayListOf<GroupableFeature>()
-
-                if (enableEIS && isVideoMode) {
-                    preferredFeatures.add(
-                        GroupableFeature.PREVIEW_STABILIZATION
-                    )
-                }
-
-                val sessionConfig = SessionConfig(
-                    useCases = useCasesList,
-                    preferredFeatureGroup = preferredFeatures,
-                    effects = listOf(PeriEffect.get(isVideoMode))
-                )
+                // OrchardCam: bind via UseCaseGroup + addEffect (the stable effects API) so the
+                // live grade actually attaches. This drops SessionConfig's preferred feature
+                // group (preview EIS); acceptable tradeoff for a working preview/video grade.
+                val builder = androidx.camera.core.UseCaseGroup.Builder()
+                useCasesList.forEach { builder.addUseCase(it) }
+                builder.addEffect(PeriEffect.get(isVideoMode))
 
                 camera = cameraProvider!!.bindToLifecycle(
-                    mActivity, cameraSelector,
-                    sessionConfig
+                    mActivity, cameraSelector, builder.build()
                 )
             } catch (exception: IllegalArgumentException) {
                 if (isVideoMode) {
-                    val newUseCaseList = arrayListOf<UseCase>()
-                    val newPreferredFeatures = arrayListOf<GroupableFeature>()
-
-                    if (enableEIS && isVideoMode) {
-                        newPreferredFeatures.add(
-                            GroupableFeature.PREVIEW_STABILIZATION
-                        )
-                    }
-
-                    videoCapture?.let {
-                        newUseCaseList.add(it)
-                    }
-                    preview?.let {
-                        newUseCaseList.add(it)
-                    }
                     imageCapture = null
-
-                    val sessionConfig = SessionConfig(
-                        useCases = newUseCaseList,
-                        preferredFeatureGroup = newPreferredFeatures,
-                        effects = listOf(PeriEffect.get(true))
-                    )
+                    val builder = androidx.camera.core.UseCaseGroup.Builder()
+                    videoCapture?.let { builder.addUseCase(it) }
+                    preview?.let { builder.addUseCase(it) }
+                    builder.addEffect(PeriEffect.get(true))
 
                     camera = cameraProvider!!.bindToLifecycle(
-                        mActivity, cameraSelector,
-                        sessionConfig
+                        mActivity, cameraSelector, builder.build()
                     )
                 } else {
                     throw exception
