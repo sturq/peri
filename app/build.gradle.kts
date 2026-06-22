@@ -19,15 +19,6 @@ java {
 }
 
 android {
-    signingConfigs {
-        // bundled debug keystore so every release APK shares one signature (smooth updates)
-        create("bundledDebug") {
-            storeFile = file("debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-        }
-    }
     if (useKeystoreProperties) {
         signingConfigs {
             create("release") {
@@ -71,9 +62,8 @@ android {
         }
 
         getByName("debug") {
-            signingConfig = signingConfigs.getByName("bundledDebug")
+            // AGP's auto-generated debug key; debug builds are never released.
             resValue("string", "app_name", "Peri")
-            // isDebuggable = false
         }
 
         create("play") {

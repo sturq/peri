@@ -32,12 +32,29 @@ jobs:
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Write signing config from secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > app/release.jks
+          cat > keystore.properties <<EOF
+          storeFile=app/release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          uploadKeyAlias=$KEY_ALIAS
+          uploadKeyPassword=$KEY_PASSWORD
+          EOF
+
       - name: Build APK
-        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --stacktrace
+        run: chmod +x gradlew && ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Rename APK
         run: |
-          SRC=$(find app/build/outputs/apk/debug -name '*.apk' | head -1)
+          SRC=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
           DST="peri-${{ steps.ver.outputs.tag }}.apk"
           cp "$SRC" "$DST"
           echo "APK=$DST" >> "$GITHUB_ENV"
