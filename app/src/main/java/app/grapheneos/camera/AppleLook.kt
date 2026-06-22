@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
-import android.graphics.Canvas
 import android.graphics.ColorSpace
 import android.graphics.HardwareRenderer
 import android.graphics.Paint
