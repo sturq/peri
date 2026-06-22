@@ -42,15 +42,16 @@ object PeriEffect {
     /** PREVIEW + VIDEO only; stills stay on AppleLook in ImageSaver. */
     fun get(): CameraEffect {
         effect?.let { return it }
-        val processor = GradeProcessor()
-        return CameraEffect(
-            CameraEffect.PREVIEW or CameraEffect.VIDEO_CAPTURE,
-            processor.executor,
-            processor,
-            Consumer { t -> Log.w("PeriEffect", "effect error", t) }
-        ).also { effect = it }
+        return GradeEffect(GradeProcessor()).also { effect = it }
     }
 }
+
+private class GradeEffect(processor: GradeProcessor) : CameraEffect(
+    CameraEffect.PREVIEW or CameraEffect.VIDEO_CAPTURE,
+    processor.executor,
+    processor,
+    Consumer { t -> Log.w(TAG, "effect error", t) }
+)
 
 private const val TAG = "PeriEffect"
 
