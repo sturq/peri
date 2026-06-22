@@ -35,12 +35,6 @@ The grade is injected at one point in `capturer/ImageSaver.kt`: the developed JP
 decoded, graded, re-encoded, and its EXIF is preserved. It runs on Android 13+ (for the
 AGSL shader); older versions save the photo ungraded.
 
-## Theme
-
-The sturq periwinkle palette (base `#2A3042`, primary `#B9C5EE`) is mapped onto the
-Material 3 colour tokens and the camera's accent colours, with a periwinkle aperture
-launcher icon.
-
 ## Scope
 
 Peri grades **saved photos**. The live preview shows the raw camera feed, not the look:
