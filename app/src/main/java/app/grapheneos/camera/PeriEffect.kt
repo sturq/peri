@@ -39,6 +39,10 @@ import java.util.concurrent.Executor
 object PeriEffect {
     // one shared GL processor, reused across rebinds
     private val processor by lazy { GradeProcessor() }
+    // cache a STABLE effect instance per mode. GOS rebinds often; handing it a fresh
+    // effect each time cancels the in-flight preview surface request before it attaches.
+    private var cached: CameraEffect? = null
+    private var cachedVideo: Boolean? = null
 
     /**
      * Targets must match the use cases bound in the current mode, or CameraX marks
@@ -46,12 +50,16 @@ object PeriEffect {
      * ImageSaver); video mode binds preview + video.
      */
     fun get(videoMode: Boolean): CameraEffect {
-        val targets = if (videoMode) {
-            CameraEffect.PREVIEW or CameraEffect.VIDEO_CAPTURE
-        } else {
-            CameraEffect.PREVIEW
+        if (cached == null || cachedVideo != videoMode) {
+            val targets = if (videoMode) {
+                CameraEffect.PREVIEW or CameraEffect.VIDEO_CAPTURE
+            } else {
+                CameraEffect.PREVIEW
+            }
+            cached = GradeEffect(processor, targets)
+            cachedVideo = videoMode
         }
-        return GradeEffect(processor, targets)
+        return cached!!
     }
 }
 
