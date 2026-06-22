@@ -1,40 +1,105 @@
+import java.io.FileInputStream
+import java.util.Properties
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val useKeystoreProperties = keystorePropertiesFile.canRead()
+val keystoreProperties = Properties()
+if (useKeystoreProperties) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
 android {
-    namespace = "com.sturq.orchardcam"
-    compileSdk = 35
+    if (useKeystoreProperties) {
+        signingConfigs {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties["storeFile"]!!)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                enableV4Signing = true
+            }
 
-    defaultConfig {
-        applicationId = "com.sturq.orchardcam"
-        minSdk = 33
-        targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
+            create("play") {
+                storeFile = rootProject.file(keystoreProperties["storeFile"]!!)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["uploadKeyAlias"] as String
+                keyPassword = keystoreProperties["uploadKeyPassword"] as String
+            }
         }
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+    compileSdk = 36
+
+    namespace = "app.grapheneos.camera"
+
+    defaultConfig {
+        applicationId = "com.sturq.orchardcam"
+        minSdk = 29
+        targetSdk = 35
+        versionCode = 90
+        versionName = versionCode.toString()
     }
-    kotlinOptions {
-        jvmTarget = "17"
+
+    buildTypes {
+        getByName("release") {
+            isShrinkResources = true
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (useKeystoreProperties) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            resValue("string", "app_name", "Camera")
+        }
+
+        getByName("debug") {
+            resValue("string", "app_name", "OrchardCam")
+            // isDebuggable = false
+        }
+
+        create("play") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".play"
+            if (useKeystoreProperties) {
+                signingConfig = signingConfigs.getByName("play")
+            }
+        }
     }
+
     buildFeatures {
         viewBinding = true
+        buildConfig = true
+        resValues = true
+    }
+
+    androidResources {
+        localeFilters += listOf("en")
     }
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.activity:activity-ktx:1.9.3")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("com.google.android.material:material:1.13.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
+    implementation("androidx.core:core-ktx:1.17.0")
+    implementation("androidx.exifinterface:exifinterface:1.4.1")
+
+    val cameraVersion = "1.6.0-alpha01"
+    implementation("androidx.camera:camera-core:$cameraVersion")
+    implementation("androidx.camera:camera-camera2:$cameraVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraVersion")
+    implementation("androidx.camera:camera-video:$cameraVersion")
+    implementation("androidx.camera:camera-view:$cameraVersion")
+    implementation("androidx.camera:camera-extensions:$cameraVersion")
+
+    implementation("com.google.zxing:core:3.5.3")
 }

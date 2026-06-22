@@ -1,23 +1,700 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="@android:color/black"
+    tools:context=".ui.activities.MainActivity">
 
-    <com.sturq.orchardcam.AutoFitTextureView
-        android:id="@+id/preview"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center" />
+        android:id="@+id/root"
+        tools:context=".ui.activities.MainActivity">
 
-    <Button
-        android:id="@+id/captureButton"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="48dp"
-        android:text="@string/capture"
-        android:textColor="@android:color/black"
-        android:background="@android:color/white" />
+        <FrameLayout
+            android:id="@+id/main_frame"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent">
 
-</FrameLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/preview_container"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent">
+
+                <androidx.camera.view.PreviewView
+                    android:id="@+id/preview"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_constraintDimensionRatio="H,9:16"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+                <app.grapheneos.camera.ui.QROverlay
+                    android:id="@+id/qr_overlay"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="invisible"
+                    app:layout_constraintTop_toTopOf="@id/preview"
+                    app:layout_constraintStart_toStartOf="@id/preview"
+                    app:layout_constraintEnd_toEndOf="@id/preview"
+                    app:layout_constraintBottom_toBottomOf="@id/preview" />
+
+                <ImageView
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    android:id="@+id/focusRing"
+                    android:src="@drawable/focus_ring"
+                    android:visibility="invisible"
+                    android:contentDescription="@string/focus_ring"
+                    app:layout_constraintTop_toTopOf="@id/preview"
+                    app:layout_constraintStart_toStartOf="@id/preview"/>
+
+                <!-- Hides part of focus ring that is outside of the preview by occupying the area below the preview. -->
+                <View
+                    android:id="@+id/bottom_overlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:background="@android:color/black"
+                    app:layout_constraintTop_toBottomOf="@id/preview"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <FrameLayout
+                android:id="@+id/g_circle_frame"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/g_circle"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:rotation="0"
+                    android:paddingBottom="14sp"
+                    android:layout_marginBottom="9dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/g_circle_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="4dp"
+                        android:shadowColor="#000000"
+                        android:shadowDx="1.5"
+                        android:shadowDy="1.3"
+                        android:shadowRadius="1.6"
+                        android:textColor="@android:color/white"
+                        android:textAlignment="center"/>
+
+                    <View
+                        android:id="@+id/g_circle_line_x"
+                        android:background="@drawable/white_shadow_rect"
+                        android:layout_width="120dp"
+                        android:layout_gravity="center"
+                        android:layout_height="2dp"/>
+
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/g_circle_line_z"
+                    android:background="@drawable/yellow_shadow_rect"
+                    android:layout_width="100dp"
+                    android:layout_gravity="center"
+                    android:layout_height="1.5dp"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/g_circle_left_dash"
+                        android:background="@drawable/white_shadow_rect"
+                        android:layout_width="8dp"
+                        android:layout_height="2dp"/>
+
+                    <View
+                        android:background="@android:color/transparent"
+                        android:layout_width="120dp"
+                        android:layout_height="1dp"/>
+
+                    <View
+                        android:id="@+id/g_circle_right_dash"
+                        android:layout_width="8dp"
+                        android:layout_height="2dp"
+                        android:background="@drawable/white_shadow_rect"/>
+
+                </LinearLayout>
+
+            </FrameLayout>
+
+            <app.grapheneos.camera.ui.CountDownTimerUI
+                android:id="@+id/c_timer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:shadowColor="#000000"
+                android:shadowDx="1.5"
+                android:shadowDy="1.3"
+                android:shadowRadius="1.6"
+                android:textColor="@android:color/white"/>
+
+            <app.grapheneos.camera.ui.CustomGrid
+                android:id="@+id/preview_grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+            <ImageView
+                android:id="@+id/main_overlay"
+                android:scaleType="fitStart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/loading_camera"/>
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="3"
+            android:layout_above="@id/three_buttons"
+            android:layout_marginBottom="8dp">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/mute_toggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/mic_on"
+                    android:background="@color/red"
+                    app:contentPadding="8dp"
+                    android:layout_gravity="center"
+                    app:shapeAppearance="@style/ShapeAppearance.Image.PILL"
+                    android:tooltipText="@string/tap_to_mute_audio"
+                    android:visibility="gone" />
+
+            </FrameLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/three_buttons"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:layout_above="@id/camera_mode_tabs"
+            android:layout_marginBottom="12dp"
+            android:visibility="invisible"
+            android:baselineAligned="false">
+
+            <FrameLayout
+                android:id="@+id/flip_camera_circle"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_gravity="center">
+
+                <ImageView
+                    android:id="@+id/flip_camera_icon"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/circle"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/flip_camera"/>
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/option_circle"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/flip_camera"/>
+
+                <ImageView
+                    android:id="@+id/flip_camera_icon_content"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/flip_camera"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/flip_camera"/>
+
+                <ImageView
+                    android:id="@+id/retake_icon"
+                    android:visibility="invisible"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/retake"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/retake"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="84dp"
+                android:layout_gravity="center">
+
+                <ImageButton
+                    android:id="@+id/capture_button"
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/camera_shutter"
+                    android:background="@drawable/cbutton_bg"
+                    android:contentDescription="@string/flip_camera"/>
+
+                <ImageButton
+                    android:id="@+id/confirm_button"
+                    android:visibility="invisible"
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/done"
+                    android:background="@drawable/cbutton_bg"
+                    android:contentDescription="@string/flip_camera"/>
+
+                <!-- Sp usage was ignore because -->
+                <TextView
+                    android:id="@+id/capture_button_text"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="28dp"
+                    android:textStyle="bold"
+                    android:textColor="#333"
+                    tools:ignore="SpUsage"/>
+
+                <ImageView
+                    android:id="@+id/capture_button_cross"
+                    android:layout_height="36dp"
+                    android:layout_width="36dp"
+                    android:src="@drawable/cancel"
+                    android:layout_gravity="center"
+                    android:visibility="invisible"
+                    android:contentDescription="@string/cancel_timer"/>
+
+                <ImageView
+                    android:id="@+id/mic_off"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:src="@drawable/mic_off"
+                    android:alpha="0.8"
+                    android:visibility="gone"
+                    android:contentDescription="@string/rec_without_audio"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/third_option"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="96dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_gravity="center">
+
+                <ImageView
+                    android:id="@+id/white_option_circle"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/white_option_circle"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/flip_camera"/>
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/image_preview"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/circle"
+                    android:layout_gravity="center"
+                    android:scaleType="centerCrop"
+                    app:shapeAppearance="@style/ShapeAppearance.Image.PILL"
+                    android:contentDescription="@string/flip_camera"/>
+
+                <ImageView
+                    android:id="@+id/third_circle"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/option_circle"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/flip_camera"/>
+
+                <ProgressBar
+                    android:indeterminateDrawable="@drawable/progress_bar_style"
+                    android:id="@+id/preview_loading"
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    android:indeterminate="true"/>
+
+                <ImageView
+                    android:id="@+id/play_preview"
+                    android:visibility="invisible"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/play"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/play_preview"/>
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/zoom_bar_panel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="16dp"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/zoom_in_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/zoom_in"
+                android:layout_marginBottom="10dp"
+                android:contentDescription="@string/zoom_in"/>
+
+            <app.grapheneos.camera.ui.seekbar.ZoomBar
+                android:id="@+id/zoom_bar"
+                android:layout_width="wrap_content"
+                android:progressTint="@android:color/transparent"
+                android:layout_height="250dp"/>
+
+            <ImageView
+                android:id="@+id/zoom_out_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/zoom_out"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="32dp"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@string/zoom_out"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/exposure_bar_panel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/exposure_plus_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/exposure_plus"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="@string/zoom_in"/>
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="250dp">
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="1dp"
+                    android:layout_gravity="center"
+                    android:background="#99ffffff"/>
+
+                <app.grapheneos.camera.ui.seekbar.ExposureBar
+                    android:id="@+id/exposure_bar"
+                    android:layout_width="wrap_content"
+                    android:progressTint="@android:color/transparent"
+                    android:thumb="@drawable/exposure_thumb"
+                    android:layout_height="250dp"/>
+
+            </FrameLayout>
+
+            <ImageView
+                android:id="@+id/exposure_neg_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/exposure_neg"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@string/zoom_out"/>
+
+        </LinearLayout>
+
+        <app.grapheneos.camera.ui.BottomTabLayout
+            android:id="@+id/camera_mode_tabs"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            app:tabPaddingStart="16dp"
+            app:tabPaddingEnd="16dp"
+            app:tabRippleColor="@android:color/transparent"
+            app:tabIndicatorFullWidth="false"
+            app:tabMode="auto"
+            app:tabIndicator="@drawable/mode_indicator"
+            android:overScrollMode="never"
+            app:tabIndicatorHeight="30dp"
+            app:tabTextColor="@android:color/white"
+            app:tabSelectedTextColor="?attr/colorOnPrimary"
+            android:background="@android:color/transparent"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="4dp" />
+
+        <FrameLayout
+            android:layout_height="26dp"
+            android:layout_width="26dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true">
+
+            <ImageView
+                android:id="@+id/cancel_button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?actionBarItemBackground"
+                android:contentDescription="@string/capture_mode"/>
+
+        </FrameLayout>
+
+        <ImageButton
+            android:id="@+id/settings_option"
+            android:layout_alignParentTop="true"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:paddingHorizontal="16dp"
+            android:background="@null"
+            android:src="@drawable/settings_icon"
+            android:contentDescription="@string/capture_mode"/>
+
+        <TextView
+            android:id="@+id/timer"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="12dp"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="2dp"
+            android:background="@drawable/timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/three_buttons"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:text="@string/start_value_timer"/>
+
+        <LinearLayout
+            android:id="@+id/qr_scan_toggles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="@dimen/settings_dialog_padding_horizontal"
+            android:gravity="center"
+            android:visibility="gone"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:orientation="vertical"
+                android:layout_height="wrap_content">
+
+                    <app.grapheneos.camera.ui.QRToggle
+                        android:id="@+id/qr_scan_toggle"
+                        android:layout_width="@dimen/qr_toggle_button_size"
+                        android:layout_height="@dimen/qr_toggle_button_size"
+                        android:layout_gravity="center"
+                        android:src="@drawable/qr_code"
+                        app:shapeAppearance="@style/ShapeAppearance.Image.PILL"/>
+
+                    <TextView
+                        android:alpha="0.8"
+                        android:layout_width="@dimen/qr_toggle_button_size"
+                        android:layout_height="@dimen/qr_toggle_button_size"
+                        android:shadowColor="#000000"
+                        android:shadowDx="1.5"
+                        android:shadowDy="1.3"
+                        android:shadowRadius="1.6"
+                        android:layout_marginTop="8dp"
+                        android:textAlignment="center"
+                        android:layout_gravity="center"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:text="@string/qr_scan"
+                        android:textColor="@android:color/white"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:orientation="vertical"
+                android:layout_height="wrap_content">
+
+                    <app.grapheneos.camera.ui.QRToggle
+                        android:id="@+id/data_matrix_toggle"
+                        android:layout_gravity="center"
+                        android:src="@drawable/data_matrix"
+                        android:layout_width="@dimen/qr_toggle_button_size"
+                        android:layout_height="@dimen/qr_toggle_button_size"
+                        app:shapeAppearance="@style/ShapeAppearance.Image.PILL"
+                        android:contentDescription="@string/qr_scan_toggle"/>
+
+                    <TextView
+                        android:alpha="0.8"
+                        android:layout_width="@dimen/qr_toggle_button_size"
+                        android:layout_height="@dimen/qr_toggle_button_size"
+                        android:shadowColor="#000000"
+                        android:shadowDx="1.5"
+                        android:shadowDy="1.3"
+                        android:shadowRadius="1.6"
+                        android:textAlignment="center"
+                        android:layout_marginTop="8dp"
+                        android:layout_gravity="center"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:text="@string/data_matrix"
+                        android:textColor="@android:color/white"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:orientation="vertical"
+                android:layout_height="wrap_content">
+
+                    <app.grapheneos.camera.ui.QRToggle
+                        android:id="@+id/aztec_toggle"
+                        android:layout_gravity="center"
+                        android:src="@drawable/aztec"
+                        android:layout_width="@dimen/qr_toggle_button_size"
+                        android:layout_height="@dimen/qr_toggle_button_size"
+                        app:shapeAppearance="@style/ShapeAppearance.Image.PILL"/>
+
+                    <TextView
+                        android:alpha="0.8"
+                        android:layout_width="@dimen/qr_toggle_button_size"
+                        android:layout_height="@dimen/qr_toggle_button_size"
+                        android:shadowColor="#000000"
+                        android:shadowDx="1.5"
+                        android:shadowDy="1.3"
+                        android:shadowRadius="1.6"
+                        android:textAlignment="center"
+                        android:layout_marginTop="8dp"
+                        android:layout_gravity="center"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:text="@string/aztec_code"
+                        android:textColor="@android:color/white"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:orientation="vertical"
+                android:layout_height="wrap_content">
+
+                <app.grapheneos.camera.ui.QRToggle
+                    android:id="@+id/pdf417_toggle"
+                    android:layout_gravity="center"
+                    android:src="@drawable/pdf417"
+                    android:layout_width="@dimen/qr_toggle_button_size"
+                    android:layout_height="@dimen/qr_toggle_button_size"
+                    app:shapeAppearance="@style/ShapeAppearance.Image.PILL"/>
+
+                <TextView
+                    android:alpha="0.8"
+                    android:layout_width="@dimen/qr_toggle_button_size"
+                    android:layout_height="@dimen/qr_toggle_button_size"
+                    android:shadowColor="#000000"
+                    android:shadowDx="1.5"
+                    android:shadowDy="1.3"
+                    android:shadowRadius="1.6"
+                    android:textAlignment="center"
+                    android:layout_marginTop="8dp"
+                    android:layout_gravity="center"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:text="@string/pdf_417"
+                    android:textColor="@android:color/white"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:orientation="vertical"
+                android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/more_options"
+                        android:src="@drawable/more_options"
+                        android:layout_gravity="center"
+                        android:layout_width="@dimen/qr_toggle_button_size"
+                        android:layout_height="@dimen/qr_toggle_button_size"
+                        android:contentDescription="@string/grid_toggle"/>
+
+                    <TextView
+                        android:alpha="0.8"
+                        android:layout_width="@dimen/qr_toggle_button_size"
+                        android:layout_height="@dimen/qr_toggle_button_size"
+                        android:layout_marginTop="8dp"
+                        android:textAlignment="center"
+                        android:layout_gravity="center"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:shadowColor="#000000"
+                        android:shadowDx="1.5"
+                        android:shadowDy="1.3"
+                        android:shadowRadius="1.6"
+                        android:text="@string/more_options"
+                        android:textColor="@android:color/white"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

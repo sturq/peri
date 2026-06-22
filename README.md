@@ -1,49 +1,41 @@
 # OrchardCam
 
-A minimal Android camera that captures RAW (DNG) and saves an "Apple-look" graded
-JPEG alongside it. The grade approximates the recognizable iPhone rendering: warm
-white balance, lifted shadows with a slight teal tint, a gentle S-curve and a
-small saturation boost.
+A fork of [GrapheneOS Camera](https://github.com/GrapheneOS/Camera) that applies an
+iPhone-style "look" to every photo as it is saved.
 
-## What it does
+The camera UI, capture, and storage are GrapheneOS Camera's (MIT licensed). The only
+addition is a grading stage: when a photo is saved, the developed JPEG is run through
+`AppleLook` before it is written.
 
-- Camera2 capture on a RAW-capable back camera.
-- Saves the unprocessed sensor data as `.dng` (via `DngCreator`) to
-  `Pictures/OrchardCam`. Full headroom, openable in Lightroom or any RAW editor.
-- Decodes the captured JPEG, applies the look (AGSL `RuntimeShader`) and saves
-  that too.
+## The grade
 
-## What it does not do
+From researching Apple's pipeline and Google's openly documented HDR+: the recognizable
+iPhone look is mostly **local tone mapping** (shadows lifted, highlights held back so
+every region is well-exposed) plus Apple's colour rendering (warm undertone, slightly
+cool shadows, restrained saturation). `AppleLook` approximates this on the GPU:
 
-It does not replicate Apple's actual pipeline. Apple fuses multiple bracketed
-exposures and runs per-region machine learning at capture time on the ISP and
-Neural Engine; none of that is available to a third-party Android app.
+- Local tone mapping via a large-radius blur as the local average, lifting shadows and
+  compressing highlights per region (a single-scale take on HDR+'s exposure fusion).
+- A global S-curve for contrast.
+- Warm undertone, teal-leaning shadows, restrained saturation.
 
-It also does not yet develop the RAW. The grade is applied to the already
-developed JPEG, not to the linear 12-bit sensor data, so it does not use the
-DNG's extra headroom. Grading the RAW directly needs an on-device demosaic and
-tone-map step (NDK / libraw). That is the next step, marked in
-`MainActivity.kt` and `AppleLook.kt`.
+It runs on Android 13+ (AGSL `RuntimeShader`); on older versions the photo is saved
+ungraded.
 
-## Tuning the look
+## What it is not
 
-The grade lives in `AppleLook.kt` as a single AGSL shader. Adjust the white
-balance, shadow tint, contrast and saturation constants, or replace the shader
-with a sampled 3D LUT exported from a real camera profile.
+It does not reproduce Apple's pipeline. The iPhone's quality comes from raw-domain
+multi-frame burst fusion (Smart HDR, Deep Fusion, Night mode) done on dedicated silicon
+at capture time, which an app receiving a finished JPEG cannot reproduce. OrchardCam
+renders the *look* on top of the image your phone's camera already produced.
+
+## Tuning
+
+The grade is one AGSL shader plus a few constants in
+`app/src/main/java/app/grapheneos/camera/AppleLook.kt`. Adjust the shadow-lift,
+highlight-compression, undertone and saturation values, or replace the shader with a
+sampled 3D LUT.
 
 ## Build
 
-CI (`.github/workflows/build.yml`) builds a debug APK on every push and uploads
-it as an artifact. To build locally with the Android SDK installed:
-
-```
-gradle assembleDebug
-```
-
-Requires Android 13 (API 33) or newer, for the AGSL `RuntimeShader` grade.
-
-## Status
-
-Early. The code compiles in CI but capture has not been verified on a physical
-device yet. RAW plus JPEG plus preview is a stream combination that depends on
-the device's camera support level.
+CI (`.github/workflows/build.yml`) builds a debug APK on every push.
