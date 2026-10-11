@@ -114,6 +114,9 @@ class App : Application() {
         super.onCreate()
         registerActivityLifecycleCallbacks(activityLifeCycleHelper)
         DynamicColors.applyToActivitiesIfAvailable(this)
+        // Peri: compile the look's shaders off the camera's startup path, so the first photo saves fast
+        Thread({ Thread.sleep(1500); AppleLook.warmUp(this) }, "look-warmup")
+            .apply { priority = Thread.MIN_PRIORITY }.start()
     }
 
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_COARSE_LOCATION])

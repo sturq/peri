@@ -176,6 +176,7 @@
 
         <activity
             android:name=".ui.activities.InAppGallery"
+            android:colorMode="hdr"
             android:theme="@style/Theme.Viewer"
             android:taskAffinity=".ui.activities.InAppGallery"
             android:excludeFromRecents="true"
@@ -204,6 +205,13 @@
             android:screenOrientation="nosensor"
             android:excludeFromRecents="true"
             tools:ignore="DiscouragedApi" />
+
+        <!-- Peri: grades a JPEG file without UI so the look can be tested from adb/Shizuku.
+             DUMP is held by the shell, not by apps. -->
+        <receiver
+            android:name=".GradeTestReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP" />
 
     </application>
 
